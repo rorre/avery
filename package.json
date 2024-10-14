@@ -46,5 +46,14 @@
       "path": "dist/avery.esm.js",
       "limit": "10 KB"
     }
-  ]
+  ],
+  "devDependencies": {
+    "@size-limit/preset-small-lib": "^11.1.6",
+    "@tsconfig/recommended": "^1.0.7",
+    "dts-cli": "^2.0.5",
+    "husky": "^9.1.6",
+    "size-limit": "^11.1.6",
+    "tslib": "^2.7.0",
+    "typescript": "^5.6.3"
+  }
 }
