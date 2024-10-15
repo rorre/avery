@@ -1,4 +1,5 @@
 import { Result } from './monad/result';
+import { nullValidator } from './validator';
 
 export function createBooleanValidator(
   func: (data: boolean) => Result<boolean, string[]>
@@ -11,5 +12,6 @@ export function createBooleanValidator(
           value != data ? [...errs, `Value mismatch, expected ${value}`] : errs
         )
       ),
+    nullable: () => nullValidator(func),
   };
 }

@@ -1,4 +1,5 @@
 import { Result } from './monad/result';
+import { nullValidator } from './validator';
 
 export function createStringValidator(
   func: (data: string) => Result<string, string[]>
@@ -17,5 +18,6 @@ export function createStringValidator(
           data.length > n ? [...errs, `Maximum length is ${n}`] : errs
         )
       ),
+    nullable: () => nullValidator(func),
   };
 }

@@ -1,5 +1,5 @@
 import { Ok, Result } from './monad/result';
-import { Validator } from './validator';
+import { nullValidator, Validator } from './validator';
 
 export function createArrayValidator<T>(baseValidator: Validator<T, string[]>) {
   const _createValidator = (func: (data: T[]) => Result<T[], string[]>) => ({
@@ -12,6 +12,7 @@ export function createArrayValidator<T>(baseValidator: Validator<T, string[]>) {
             : errs
         )
       ),
+    nullable: () => nullValidator(func),
   });
 
   return _createValidator((data) =>
