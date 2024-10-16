@@ -1,13 +1,11 @@
-import { Result } from './monad/result';
+import { Err, Ok, Result } from './monad/result';
 import { nullValidator } from './validator';
 
-export function createBooleanValidator(
-  func: (data: boolean) => Result<boolean, string[]>
-) {
+function _createValidator(func: (data: boolean) => Result<boolean, string[]>) {
   return {
     validate: func,
     is: (value: boolean) =>
-      createBooleanValidator((data) =>
+      _createValidator((data) =>
         func(data).fmapErr((errs) =>
           value != data ? [...errs, `Value mismatch, expected ${value}`] : errs
         )
@@ -15,3 +13,10 @@ export function createBooleanValidator(
     nullable: () => nullValidator(func),
   };
 }
+
+export const createBooleanValidator = () =>
+  _createValidator((data) =>
+    typeof data === 'boolean'
+      ? Ok(data)
+      : Err([`Data is not boolean, got ${typeof data}`])
+  );

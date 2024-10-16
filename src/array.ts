@@ -1,11 +1,11 @@
 import { Ok, Result } from './monad/result';
 import { nullValidator, Validator } from './validator';
 
-export function createArrayValidator<T>(baseValidator: Validator<T, string[]>) {
-  const _createValidator = (func: (data: T[]) => Result<T[], string[]>) => ({
+function _createValidator<T>(func: (data: T[]) => Result<T[], string[]>) {
+  return {
     validate: func,
     maxLength: (n: number) =>
-      _createValidator((data) =>
+      _createValidator((data: T[]) =>
         func(data).fmapErr((errs) =>
           data.length > n
             ? [...errs, `Length of array is too big, expected ${n}`]
@@ -13,9 +13,11 @@ export function createArrayValidator<T>(baseValidator: Validator<T, string[]>) {
         )
       ),
     nullable: () => nullValidator(func),
-  });
+  };
+}
 
-  return _createValidator((data) =>
+export function createArrayValidator<T>(baseValidator: Validator<T, string[]>) {
+  return _createValidator<T>((data) =>
     data.reduce(
       (a, b) =>
         a.bind((partial) =>
