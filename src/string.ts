@@ -1,9 +1,8 @@
 import { Err, Ok, Result } from './monad/result';
-import { nullValidator } from './validator';
+import { baseValidator, nullValidator } from './validator';
 
 function _createValidator(func: (data: string) => Result<string, string[]>) {
-  return {
-    validate: func,
+  return baseValidator(func, {
     minLength: (n: number) =>
       _createValidator((data) =>
         func(data).fmapErr((errs) =>
@@ -16,8 +15,7 @@ function _createValidator(func: (data: string) => Result<string, string[]>) {
           data.length > n ? [...errs, `Maximum length is ${n}`] : errs
         )
       ),
-    nullable: () => nullValidator(func),
-  };
+  });
 }
 
 export const createStringValidator = () =>

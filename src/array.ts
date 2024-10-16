@@ -1,9 +1,8 @@
 import { Ok, Result } from './monad/result';
-import { nullValidator, Validator } from './validator';
+import { baseValidator, nullValidator, Validator } from './validator';
 
 function _createValidator<T>(func: (data: T[]) => Result<T[], string[]>) {
-  return {
-    validate: func,
+  return baseValidator(func, {
     maxLength: (n: number) =>
       _createValidator((data: T[]) =>
         func(data).fmapErr((errs) =>
@@ -12,8 +11,7 @@ function _createValidator<T>(func: (data: T[]) => Result<T[], string[]>) {
             : errs
         )
       ),
-    nullable: () => nullValidator(func),
-  };
+  });
 }
 
 export function createArrayValidator<T>(baseValidator: Validator<T, string[]>) {
