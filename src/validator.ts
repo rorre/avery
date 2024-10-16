@@ -9,7 +9,7 @@ export interface Validator<T, E> {
 
 export const nullValidator = <T, E>(func: ValidateFunc<T, E>) => ({
   validate: (data: T | null) => (data == null ? Ok(null) : func(data)),
-  nullable: () => this,
+  nullable: () => nullValidator(func),
 });
 
 export const baseValidator = <T, Additional extends Record<string, any>>(
