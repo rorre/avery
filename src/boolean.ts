@@ -3,7 +3,7 @@ import { baseValidator, nullValidator } from './validator';
 
 function _createValidator(func: (data: boolean) => Result<boolean, string[]>) {
   return baseValidator(func, {
-    is: (value: boolean) =>
+    eq: (value: boolean) =>
       _createValidator((data) =>
         func(data).fmapErr((errs) =>
           value != data ? [...errs, `Value mismatch, expected ${value}`] : errs
