@@ -12,9 +12,10 @@ function _createValidator(func: (data: boolean) => Result<boolean, string[]>) {
   });
 }
 
-export const createBooleanValidator = () =>
-  _createValidator((data) =>
+export function createBooleanValidator() {
+  return _createValidator((data) =>
     typeof data === 'boolean'
       ? Ok(data)
       : Err([`Data is not boolean, got ${typeof data}`])
   );
+}

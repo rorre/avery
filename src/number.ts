@@ -44,9 +44,10 @@ function _createValidator(func: (data: number) => Result<number, string[]>) {
   });
 }
 
-export const createNumberValidator = () =>
-  _createValidator((data) =>
+export function createNumberValidator() {
+  return _createValidator((data) =>
     typeof data === 'number'
       ? Ok(data)
       : Err([`Data is not number, got ${typeof data}`])
   );
+}

@@ -18,9 +18,10 @@ function _createValidator(func: (data: string) => Result<string, string[]>) {
   });
 }
 
-export const createStringValidator = () =>
-  _createValidator((data) =>
+export function createStringValidator() {
+  return _createValidator((data) =>
     typeof data === 'string'
       ? Ok(data)
       : Err([`Data is not string, received ${typeof data}`])
   );
+}
