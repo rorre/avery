@@ -1,7 +1,12 @@
 import { Err, Ok, Result } from './monad/result';
-import { baseValidator, nullValidator } from './validator';
+import { baseValidator, nullValidator, Validator } from './validator';
 
-function _createValidator(func: (data: string) => Result<string, string[]>) {
+function _createValidator(
+  func: (data: string) => Result<string, string[]>
+): Validator<string, string[]> & {
+  minLength: (n: number) => ReturnType<typeof _createValidator>;
+  maxLength: (n: number) => ReturnType<typeof _createValidator>;
+} {
   return baseValidator(func, {
     minLength: (n: number) =>
       _createValidator((data) =>

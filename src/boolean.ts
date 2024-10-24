@@ -1,7 +1,11 @@
 import { Err, Ok, Result } from './monad/result';
-import { baseValidator, nullValidator } from './validator';
+import { baseValidator, nullValidator, Validator } from './validator';
 
-function _createValidator(func: (data: boolean) => Result<boolean, string[]>) {
+function _createValidator(
+  func: (data: boolean) => Result<boolean, string[]>
+): Validator<boolean, string[]> & {
+  eq: (value: boolean) => ReturnType<typeof _createValidator>;
+} {
   return baseValidator(func, {
     eq: (value: boolean) =>
       _createValidator((data) =>

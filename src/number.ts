@@ -1,7 +1,15 @@
 import { Err, Ok, Result } from './monad/result';
-import { baseValidator } from './validator';
+import { baseValidator, Validator } from './validator';
 
-function _createValidator(func: (data: number) => Result<number, string[]>) {
+function _createValidator(
+  func: (data: number) => Result<number, string[]>
+): Validator<number, string[]> & {
+  eq: (n: number) => ReturnType<typeof _createValidator>;
+  lt: (n: number) => ReturnType<typeof _createValidator>;
+  lte: (n: number) => ReturnType<typeof _createValidator>;
+  gt: (n: number) => ReturnType<typeof _createValidator>;
+  gte: (n: number) => ReturnType<typeof _createValidator>;
+} {
   return baseValidator(func, {
     eq: (value: number) =>
       _createValidator((data) =>

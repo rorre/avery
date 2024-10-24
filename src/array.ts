@@ -1,7 +1,11 @@
 import { Ok, Result } from './monad/result';
 import { baseValidator, nullValidator, Validator } from './validator';
 
-function _createValidator<T>(func: (data: T[]) => Result<T[], string[]>) {
+function _createValidator<T>(
+  func: (data: T[]) => Result<T[], string[]>
+): Validator<T[], string[]> & {
+  maxLength: (n: number) => ReturnType<typeof _createValidator<T>>;
+} {
   return baseValidator(func, {
     maxLength: (n: number) =>
       _createValidator((data: T[]) =>
