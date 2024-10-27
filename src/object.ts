@@ -1,18 +1,13 @@
+import { InferSchema } from './index';
 import { Err, Ok, Result } from './monad/result';
 import { baseValidator, Validator } from './validator';
 
-type InferSchema<T extends Record<string, Validator<unknown, unknown>>> = {
-  [Key in keyof T]: T[Key] extends Validator<infer V, any>
-    ? V extends Record<string, Validator<unknown, unknown>>
-      ? InferSchema<V>
-      : V
-    : never;
-};
-
-type InferErrorSchema<T extends Record<string, Validator<unknown, unknown>>> = {
+export type InferErrorSchema<
+  T extends Record<string, Validator<unknown, unknown>>
+> = {
   [Key in keyof T]: T[Key] extends Validator<any, infer V>
     ? V extends Record<string, Validator<unknown, unknown>>
-      ? InferSchema<V>
+      ? InferErrorSchema<V>
       : V
     : never;
 };
@@ -34,12 +29,8 @@ function errorObjectToArray(prefix: string, errors: Err): string[] {
 }
 
 export function createObjectValidator<
-  S extends {
-    [K in keyof S]: S[K] extends Validator<infer Inner, infer Err>
-      ? Validator<Inner, Err>
-      : never;
-  },
-  T = InferSchema<S>
+  S extends Record<string, Validator<unknown, unknown>>,
+  T extends InferSchema<S> = InferSchema<S>
 >(schema: S): Validator<T, string[]> {
   function validateFunc(data: any): Result<T, string[]> {
     return Object.keys(schema)
