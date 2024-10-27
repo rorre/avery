@@ -1,4 +1,4 @@
-import { Ok, Result } from './monad/result';
+import { Err, Ok, Result } from './monad/result';
 import { baseValidator, Validator } from './validator';
 
 type InferSchema<T extends Record<string, Validator<unknown, unknown>>> = {
@@ -9,7 +9,7 @@ type InferSchema<T extends Record<string, Validator<unknown, unknown>>> = {
     : never;
 };
 
-function _createValidator<T>(func: (data: T) => Result<T, string[]>) {
+function _createValidator<T>(func: (data: any) => Result<T, string[]>) {
   return baseValidator(func, {});
 }
 
@@ -30,8 +30,13 @@ export function createObjectValidator<
             ...partial,
           })) as Result<T, string[]>
       ),
-    (data: T) => Ok({} as T) as Result<T, string[]>
+    (data: any) => Ok({} as T) as Result<T, string[]>
   );
 
-  return _createValidator(validateFunc);
+  const ensureObject = (data: any) =>
+    (typeof data === 'object' && !Array.isArray(data) && data !== null
+      ? Ok(data as T)
+      : Err([`Data is not number, got ${typeof data}`])) as Result<T, string[]>;
+
+  return _createValidator((data) => ensureObject(data).bind(validateFunc));
 }

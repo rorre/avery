@@ -10,7 +10,7 @@ export interface Result<T, E> {
   isErr: () => boolean;
 }
 
-function createOk<T>(value: T): Result<T, never> {
+function createOk<T, E>(value: T): Result<T, E> {
   return {
     fmap: (transform) => createOk(transform(value)),
     fmapErr: (_) => createOk(value),
@@ -26,7 +26,7 @@ function createOk<T>(value: T): Result<T, never> {
   };
 }
 
-function createErr<E>(value: E): Result<never, E> {
+function createErr<T, E>(value: E): Result<T, E> {
   return {
     fmap: (_) => createErr(value),
     fmapErr: (transform) => createErr(transform(value)),
@@ -35,7 +35,7 @@ function createErr<E>(value: E): Result<never, E> {
       throw new Error(message);
     },
     unwrap: () => {
-      throw new Error('This is an error');
+      throw new Error('This is an error! Err: ' + value);
     },
     unwrapOr: (defaultValue) => defaultValue,
     isOk: () => false,
