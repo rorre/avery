@@ -13,10 +13,10 @@ export const nullValidator = <T, E>(func: ValidateFunc<T, E>) => ({
   nullable: () => nullValidator(func),
 });
 
-export const baseValidator = <T, Additional extends Record<string, any>>(
-  func: (data: any) => Result<T, string[]>,
+export const baseValidator = <T, Additional extends Record<string, any>, E>(
+  func: (data: any) => Result<T, E>,
   additional: Additional
-): Validator<T, string[]> & Additional => ({
+): Validator<T, E> & Additional => ({
   validate: func,
   nullable: () => nullValidator(func),
   ...additional,

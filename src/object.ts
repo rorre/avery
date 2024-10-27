@@ -9,8 +9,28 @@ type InferSchema<T extends Record<string, Validator<unknown, unknown>>> = {
     : never;
 };
 
-function _createValidator<T>(func: (data: any) => Result<T, string[]>) {
+type InferErrorSchema<T extends Record<string, Validator<unknown, unknown>>> = {
+  [Key in keyof T]: T[Key] extends Validator<any, infer V>
+    ? V extends Record<string, Validator<unknown, unknown>>
+      ? InferSchema<V>
+      : V
+    : never;
+};
+
+function _createValidator<T, E>(func: (data: any) => Result<T, E>) {
   return baseValidator(func, {});
+}
+
+type Err = {
+  [k: string]: string[] | Err;
+};
+
+function errorObjectToArray(prefix: string, errors: Err): string[] {
+  return Object.entries(errors).flatMap(([k, v]) =>
+    Array.isArray(v)
+      ? v.map((e) => `${prefix}.${k}: ${e}`)
+      : errorObjectToArray(prefix ? `${prefix}.${k}` : k, v)
+  );
 }
 
 export function createObjectValidator<
@@ -21,22 +41,44 @@ export function createObjectValidator<
   },
   T = InferSchema<S>
 >(schema: S): Validator<T, string[]> {
-  const validateFunc = Object.keys(schema).reduce(
-    (func, k) => (data) =>
-      func(data).bind(
-        (partial) =>
-          schema[k as keyof S].validate(data[k as keyof T]).fmap((result) => ({
-            [k as keyof T]: result as T[keyof T],
-            ...partial,
-          })) as Result<T, string[]>
-      ),
-    (data: any) => Ok({} as T) as Result<T, string[]>
-  );
+  function validateFunc(data: any): Result<T, string[]> {
+    return Object.keys(schema)
+      .map(
+        (key) =>
+          [
+            key as keyof S,
+            schema[key as keyof S].validate(data[key]) as Result<T, string[]>,
+          ] as const
+      )
+      .reduce(
+        (prev, [k, result]) =>
+          prev
+            .bind(
+              (value) =>
+                (result.isOk()
+                  ? Ok({
+                      [k]: result.unwrap(),
+                      ...value,
+                    })
+                  : Err({})) as Result<T, InferErrorSchema<S>>
+            )
+            .fmapErr((err) =>
+              result.isErr()
+                ? {
+                    ...err,
+                    [k]: result.unwrapErr(),
+                  }
+                : err
+            ),
+        Ok({} as T) as Result<T, InferErrorSchema<S>>
+      )
+      .fmapErr((errors) => errorObjectToArray('', errors as Err));
+  }
 
   const ensureObject = (data: any) =>
     (typeof data === 'object' && !Array.isArray(data) && data !== null
       ? Ok(data as T)
-      : Err([`Data is not number, got ${typeof data}`])) as Result<T, string[]>;
+      : Err([`Data is not object, got ${typeof data}`])) as Result<T, string[]>;
 
   return _createValidator((data) => ensureObject(data).bind(validateFunc));
 }
