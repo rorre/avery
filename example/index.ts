@@ -21,8 +21,19 @@ const res = schema.validate({
   extraData: {
     hello: 'world',
     skibidi: {
-      rizz: 'lol',
+      rizz: 'aaa',
     },
   },
 });
-console.log(res.unwrap());
+
+console.log(
+  {
+    // @ts-ignore
+    [res.isOk()]: () => res.unwrap(),
+    // @ts-ignore
+    [res.isErr()]: () => res.unwrapErr(),
+    // @ts-ignore
+  }.true()
+);
+// const x = res.unwrapErr();
+// console.log(x);
