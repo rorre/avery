@@ -21,10 +21,13 @@ function _createValidator<T>(
 export function createArrayValidator<T>(baseValidator: Validator<T, string[]>) {
   return _createValidator<T>((data) =>
     data
+      // Run validation for all member of the array
       .map((value) => baseValidator.validate(value))
+      // Aggregate the result
       .reduce(
         (a, b, idx) =>
           a
+            // We want to be able to transform into Err() if we stumble upon any validation error
             .bind(
               (partial) =>
                 (b.isOk() ? Ok([...partial, b.unwrap()]) : Err([])) as Result<
@@ -32,6 +35,7 @@ export function createArrayValidator<T>(baseValidator: Validator<T, string[]>) {
                   string[]
                 >
             )
+            // Add the error message
             .fmapErr((err) =>
               b.isErr()
                 ? [
