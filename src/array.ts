@@ -28,12 +28,8 @@ export function createArrayValidator<T>(baseValidator: Validator<T, string[]>) {
         (a, b, idx) =>
           a
             // We want to be able to transform into Err() if we stumble upon any validation error
-            .bind(
-              (partial) =>
-                (b.isOk() ? Ok([...partial, b.unwrap()]) : Err([])) as Result<
-                  T[],
-                  string[]
-                >
+            .bind((partial) =>
+              b.isOk() ? Ok([...partial, b.unwrap()]) : Err<T[], string[]>([])
             )
             // Add the error message
             .fmapErr((err) =>
@@ -44,7 +40,7 @@ export function createArrayValidator<T>(baseValidator: Validator<T, string[]>) {
                   ]
                 : err
             ),
-        Ok([]) as Result<T[], string[]>
+        Ok<T[], string[]>([])
       )
   );
 }

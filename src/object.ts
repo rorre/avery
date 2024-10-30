@@ -51,14 +51,13 @@ export function createObjectValidator<
           (prev, [k, result]) =>
             prev
               // We want to transform this into Err() if we encounter any validation error
-              .bind(
-                (value) =>
-                  (result.isOk()
-                    ? Ok({
-                        [k]: result.unwrap(),
-                        ...value,
-                      })
-                    : Err({})) as Result<T, InferErrorSchema<S>>
+              .bind((value) =>
+                result.isOk()
+                  ? Ok({
+                      [k]: result.unwrap(),
+                      ...value,
+                    })
+                  : Err<Partial<T>, Partial<InferErrorSchema<S>>>({})
               )
               // Add current error as key: Err
               .fmapErr((err) =>
@@ -70,10 +69,11 @@ export function createObjectValidator<
                   : err
               ),
           // Start with an empty Ok(), at the end we will have the entire object if checks are successful
-          Ok({} as T) as Result<T, InferErrorSchema<S>>
+          Ok<Partial<T>, Partial<InferErrorSchema<S>>>({})
         )
         // The error object is currently shaped like the object, so flatten out to an array of messages
         .fmapErr((errors) => errorObjectToArray('', errors as Err))
+        .fmap((val) => val as T)
     );
   }
 
