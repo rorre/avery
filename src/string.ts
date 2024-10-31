@@ -1,5 +1,5 @@
 import { Err, Ok, Result } from './monad/result';
-import { baseValidator, nullValidator, Validator } from './validator';
+import { baseValidator, createCheck, Validator } from './validator';
 
 function _createValidator(
   func: (data: string) => Result<string, string[]>
@@ -10,14 +10,16 @@ function _createValidator(
   return baseValidator(func, {
     minLength: (n: number) =>
       _createValidator((data) =>
-        func(data).fmapErr((errs) =>
-          data.length < n ? [...errs, `Minimum length is ${n}`] : errs
+        createCheck(
+          (res) => (res.length < n ? `Value ${res} is too short` : null),
+          func(data)
         )
       ),
     maxLength: (n: number) =>
       _createValidator((data) =>
-        func(data).fmapErr((errs) =>
-          data.length > n ? [...errs, `Maximum length is ${n}`] : errs
+        createCheck(
+          (res) => (res.length > n ? `Value ${res} is too long` : null),
+          func(data)
         )
       ),
   });

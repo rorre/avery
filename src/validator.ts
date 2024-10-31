@@ -1,4 +1,4 @@
-import { Ok, Result } from './monad/result';
+import { Err, Ok, Result } from './monad/result';
 
 export type ValidateFunc<T, E> = (data: T) => Result<T, E>;
 
@@ -21,3 +21,14 @@ export const baseValidator = <T, Additional extends Record<string, any>, E>(
   nullable: () => nullValidator(func),
   ...additional,
 });
+
+export function createCheck<T>(
+  func: (value: T) => string | undefined | null,
+  currentResult: Result<T, string[]>
+) {
+  return currentResult.bind((value) => {
+    const checkResult = func(value);
+    if (checkResult) return Err<T, string[]>([checkResult]);
+    return Ok(value);
+  });
+}

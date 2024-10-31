@@ -1,5 +1,5 @@
 import { Err, Ok, Result } from './monad/result';
-import { baseValidator, Validator } from './validator';
+import { baseValidator, createCheck, Validator } from './validator';
 
 function _createValidator(
   func: (data: number) => Result<number, string[]>
@@ -13,40 +13,46 @@ function _createValidator(
   return baseValidator(func, {
     eq: (value: number) =>
       _createValidator((data) =>
-        func(data).fmapErr((errs) =>
-          value != data ? [...errs, `Value mismatch, expected ${value}`] : errs
+        createCheck(
+          (res) =>
+            res != value ? `Value ${res} does not equal ${value}` : null,
+          func(data)
         )
       ),
     gt: (value: number) =>
       _createValidator((data) =>
-        func(data).fmapErr((errs) =>
-          value > data
-            ? errs
-            : [...errs, `Value ${data} is not greater than ${value}`]
+        createCheck(
+          (res) =>
+            res <= value ? `Value ${res} is not greater than ${value}` : null,
+          func(data)
         )
       ),
     gte: (value: number) =>
       _createValidator((data) =>
-        func(data).fmapErr((errs) =>
-          value > data
-            ? errs
-            : [...errs, `Value ${data} is not greater than or equal ${value}`]
+        createCheck(
+          (res) =>
+            res < value
+              ? `Value ${res} is not greater than or equal to ${value}`
+              : null,
+          func(data)
         )
       ),
     lt: (value: number) =>
       _createValidator((data) =>
-        func(data).fmapErr((errs) =>
-          value < data
-            ? errs
-            : [...errs, `Value ${data} is not less than ${value}`]
+        createCheck(
+          (res) =>
+            res >= value ? `Value ${res} is not less than ${value}` : null,
+          func(data)
         )
       ),
     lte: (value: number) =>
       _createValidator((data) =>
-        func(data).fmapErr((errs) =>
-          value <= data
-            ? errs
-            : [...errs, `Value ${data} is not less than or equal ${value}`]
+        createCheck(
+          (res) =>
+            res > value
+              ? `Value ${res} is not less than or equal to ${value}`
+              : null,
+          func(data)
         )
       ),
   });

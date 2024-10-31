@@ -1,5 +1,5 @@
 import { Err, Ok, Result } from './monad/result';
-import { baseValidator, nullValidator, Validator } from './validator';
+import { baseValidator, createCheck, Validator } from './validator';
 
 function _createValidator(
   func: (data: boolean) => Result<boolean, string[]>
@@ -9,8 +9,10 @@ function _createValidator(
   return baseValidator(func, {
     eq: (value: boolean) =>
       _createValidator((data) =>
-        func(data).fmapErr((errs) =>
-          value != data ? [...errs, `Value mismatch, expected ${value}`] : errs
+        createCheck(
+          (res) =>
+            res != value ? `Value ${res} does not equal ${value}` : null,
+          func(data)
         )
       ),
   });
