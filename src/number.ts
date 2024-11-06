@@ -9,6 +9,7 @@ function _createValidator(
   lte: (n: number) => ReturnType<typeof _createValidator>;
   gt: (n: number) => ReturnType<typeof _createValidator>;
   gte: (n: number) => ReturnType<typeof _createValidator>;
+  int: (n: number) => ReturnType<typeof _createValidator>;
 } {
   return baseValidator(func, {
     eq: (value: number) =>
@@ -52,6 +53,22 @@ function _createValidator(
             res > value
               ? `Value ${res} is not less than or equal to ${value}`
               : null,
+          func(data)
+        )
+      ),
+    int: () =>
+      _createValidator((data) =>
+        createCheck(
+          (val) =>
+            !Number.isInteger(val) ? `Value ${val} is not an integer` : null,
+          func(data)
+        )
+      ),
+    finite: () =>
+      _createValidator((data) =>
+        createCheck(
+          (val) =>
+            !Number.isFinite(val) ? `Value ${val} is not finite` : null,
           func(data)
         )
       ),
