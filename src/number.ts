@@ -1,5 +1,5 @@
 import { Err, Ok, Result } from './monad/result';
-import { baseValidator, createCheck, Validator } from './validator';
+import { baseValidator, runCheck, Validator } from './validator';
 
 function _createValidator(
   func: (data: number) => Result<number, string[]>
@@ -14,7 +14,7 @@ function _createValidator(
   return baseValidator(func, {
     eq: (value: number) =>
       _createValidator((data) =>
-        createCheck(
+        runCheck(
           (res) =>
             res != value ? `Value ${res} does not equal ${value}` : null,
           func(data)
@@ -22,7 +22,7 @@ function _createValidator(
       ),
     gt: (value: number) =>
       _createValidator((data) =>
-        createCheck(
+        runCheck(
           (res) =>
             res <= value ? `Value ${res} is not greater than ${value}` : null,
           func(data)
@@ -30,7 +30,7 @@ function _createValidator(
       ),
     gte: (value: number) =>
       _createValidator((data) =>
-        createCheck(
+        runCheck(
           (res) =>
             res < value
               ? `Value ${res} is not greater than or equal to ${value}`
@@ -40,7 +40,7 @@ function _createValidator(
       ),
     lt: (value: number) =>
       _createValidator((data) =>
-        createCheck(
+        runCheck(
           (res) =>
             res >= value ? `Value ${res} is not less than ${value}` : null,
           func(data)
@@ -48,7 +48,7 @@ function _createValidator(
       ),
     lte: (value: number) =>
       _createValidator((data) =>
-        createCheck(
+        runCheck(
           (res) =>
             res > value
               ? `Value ${res} is not less than or equal to ${value}`
@@ -58,7 +58,7 @@ function _createValidator(
       ),
     int: () =>
       _createValidator((data) =>
-        createCheck(
+        runCheck(
           (val) =>
             !Number.isInteger(val) ? `Value ${val} is not an integer` : null,
           func(data)
@@ -66,7 +66,7 @@ function _createValidator(
       ),
     finite: () =>
       _createValidator((data) =>
-        createCheck(
+        runCheck(
           (val) =>
             !Number.isFinite(val) ? `Value ${val} is not finite` : null,
           func(data)

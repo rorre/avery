@@ -22,7 +22,7 @@ export const baseValidator = <T, Additional extends Record<string, any>, E>(
   ...additional,
 });
 
-export function createCheck<T>(
+export function runCheck<T>(
   func: (value: T) => string | undefined | null,
   currentResult: Result<T, string[]>
 ) {

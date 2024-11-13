@@ -1,5 +1,5 @@
 import { Err, Ok, Result } from './monad/result';
-import { baseValidator, createCheck, Validator } from './validator';
+import { baseValidator, runCheck, Validator } from './validator';
 
 function _createValidator<T>(
   func: (data: T[]) => Result<T[], string[]>
@@ -9,7 +9,7 @@ function _createValidator<T>(
   return baseValidator(func, {
     maxLength: (n: number) =>
       _createValidator((data: T[]) =>
-        createCheck(
+        runCheck(
           (res) => (res.length > n ? `Array too long` : null),
           func(data)
         )

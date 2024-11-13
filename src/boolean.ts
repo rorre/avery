@@ -1,5 +1,5 @@
 import { Err, Ok, Result } from './monad/result';
-import { baseValidator, createCheck, Validator } from './validator';
+import { baseValidator, runCheck, Validator } from './validator';
 
 function _createValidator(
   func: (data: boolean) => Result<boolean, string[]>
@@ -9,7 +9,7 @@ function _createValidator(
   return baseValidator(func, {
     eq: (value: boolean) =>
       _createValidator((data) =>
-        createCheck(
+        runCheck(
           (res) =>
             res != value ? `Value ${res} does not equal ${value}` : null,
           func(data)
