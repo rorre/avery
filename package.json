@@ -50,6 +50,7 @@
   "devDependencies": {
     "@size-limit/preset-small-lib": "^11.1.6",
     "@tsconfig/recommended": "^1.0.7",
+    "@types/bun": "^1.1.13",
     "dts-cli": "^2.0.5",
     "husky": "^9.1.6",
     "size-limit": "^11.1.6",
