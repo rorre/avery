@@ -9,7 +9,8 @@ function _createValidator(
   lte: (n: number) => ReturnType<typeof _createValidator>;
   gt: (n: number) => ReturnType<typeof _createValidator>;
   gte: (n: number) => ReturnType<typeof _createValidator>;
-  int: (n: number) => ReturnType<typeof _createValidator>;
+  int: () => ReturnType<typeof _createValidator>;
+  finite: () => ReturnType<typeof _createValidator>;
 } {
   return baseValidator(func, {
     eq: (value: number) =>
