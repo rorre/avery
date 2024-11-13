@@ -5,13 +5,6 @@ import { createObjectValidator } from './object';
 import { createStringValidator } from './string';
 import { Validator } from './validator';
 
-export const sum = (a: number, b: number) => {
-  if ('development' === process.env.NODE_ENV) {
-    console.log('dev only output');
-  }
-  return a + b;
-};
-
 export type InferSchema<T> = T extends Validator<infer V, any>
   ? V
   : T extends Record<string, Validator<unknown, unknown>>
