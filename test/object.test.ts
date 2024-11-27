@@ -48,21 +48,64 @@ describe('Object Validator Tests', () => {
       user: avery.object({
         name: avery.string(),
         age: avery.number(),
+        school: avery.object({
+          name: avery.string(),
+          address: avery.string(),
+        }),
       }),
     };
     const validator = avery.object(schema);
 
     expectResultEqual(
-      validator.validate({ user: { name: 'John', age: 30 } }),
-      Ok({ user: { name: 'John', age: 30 } })
+      validator.validate({
+        user: {
+          name: 'John',
+          age: 30,
+          school: {
+            name: 'School',
+            address: '123 Street',
+          },
+        },
+      }),
+      Ok({
+        user: {
+          name: 'John',
+          age: 30,
+          school: {
+            name: 'School',
+            address: '123 Street',
+          },
+        },
+      })
     );
     expectResultEqual(
-      validator.validate({ user: { name: 'John', age: '30' } }),
-      Err(['.user: .age: Data is not number, got string'])
+      validator.validate({
+        user: {
+          name: 'John',
+          age: '30',
+          school: {
+            name: 123,
+            address: '123 Street',
+          },
+        },
+      }),
+      Err([
+        '.user: .age: Data is not number, got string',
+        '.user: .school: .name: Data is not string, received number',
+      ])
     );
     expectResultEqual(
-      validator.validate({ user: { name: 123, age: 30 } }),
-      Err(['.user: .name: Data is not string, received number'])
+      validator.validate({
+        user: { name: 123, age: 30 },
+        school: {
+          name: 'School',
+          address: '123 Street',
+        },
+      }),
+      Err([
+        '.user: .name: Data is not string, received number',
+        '.user: .school: Data is not object, got undefined',
+      ])
     );
   });
 
