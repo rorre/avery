@@ -1,103 +1,129 @@
-# DTS User Guide
+# Avery
 
-Congrats! You just saved yourself hours of work by bootstrapping this project with DTS. Let’s get you oriented with what’s here and how to use it.
+Yet another validator and JSON parser with first class Typescript support and zod-like features. This time purely functional!
 
-> This DTS setup is meant for developing libraries (not apps!) that can be published to NPM. If you’re looking to build a Node app, you could use `ts-node-dev`, plain `ts-node`, or simple `tsc`.
+# Usage
 
-> If you’re new to TypeScript, checkout [this handy cheatsheet](https://devhints.io/typescript)
+```ts
+import { avery as a } from 'avery';
 
-## Commands
+const schema = a.array(
+  a.array(
+    a.object({
+      name: a.string(),
+      age: a.number(),
+    })
+  )
+);
 
-DTS scaffolds your new library inside `/src`.
+const result = schema.validate([
+  [
+    {
+      name: 'John',
+      age: 10,
+    },
+    {
+      name: 'Jane',
+      age: 20,
+    },
+  ],
+]);
 
-To run DTS, use:
-
-```bash
-npm start # or yarn start
+const data = result.unwrap();
+console.log(data);
 ```
 
-This builds to `/dist` and runs the project in watch mode so any edits you save inside `src` causes a rebuild to `/dist`.
+This example runs as-is, and will validate the data. If the data is invalid, it will throw an error with a detailed message of where it errors out. For example, the example will produce the data itself.
 
-To do a one-off build, use `npm run build` or `yarn build`.
+## Type Inference
 
-To run tests, use `npm test` or `yarn test`.
+You may be able to inference the type based on the schema you have built, just like zod!
 
-## Configuration
+```ts
+import { InferSchema, avery as a } from 'avery';
 
-Code quality is set up for you with `prettier`, `husky`, and `lint-staged`. Adjust the respective fields in `package.json` accordingly.
+const schema = a.object({
+  name: a.string(),
+  age: a.number(),
+});
 
-### Jest
-
-Jest tests are set up to run with `npm test` or `yarn test`.
-
-### Bundle Analysis
-
-[`size-limit`](https://github.com/ai/size-limit) is set up to calculate the real cost of your library with `npm run size` and visualize the bundle with `npm run analyze`.
-
-#### Setup Files
-
-This is the folder structure we set up for you:
-
-```txt
-/src
-  index.ts        # EDIT THIS
-/test
-  index.test.ts   # EDIT THIS
-.gitignore
-package.json
-README.md         # EDIT THIS
-tsconfig.json
+type Data = InferSchema<typeof schema>;
+// The type will be:
+// {
+//   name: string;
+//   age: number;
+// }
 ```
 
-### Rollup
+# Validators
 
-DTS uses [Rollup](https://rollupjs.org) as a bundler and generates multiple rollup configs for various module formats and build settings. See [Optimizations](#optimizations) for details.
+## String
 
-### TypeScript
+Constructor: `a.string()`
 
-`tsconfig.json` is set up to interpret `dom` and `esnext` types, as well as `react` for `jsx`. Adjust according to your needs.
+Methods:
 
-## Continuous Integration
+- `minLength(min: number)` - Minimum length of the string
+- `maxLength(max: number)` - Maximum length of the string
 
-### GitHub Actions
-
-Two actions are added by default:
-
-- `main` which installs deps w/ cache, lints, tests, and builds on all pushes against a Node and OS matrix
-- `size` which comments cost comparison of your library on every pull request using [`size-limit`](https://github.com/ai/size-limit)
-
-## Optimizations
-
-Please see the main `dts` [optimizations docs](https://github.com/weiran-zsd/dts-cli#optimizations). In particular, know that you can take advantage of development-only optimizations:
-
-```js
-// ./types/index.d.ts
-declare var __DEV__: boolean;
-
-// inside your code...
-if (__DEV__) {
-  console.log('foo');
-}
+```ts
+const schema = a.string().minLength(3).maxLength(10);
+schema.validate('Hello!');
 ```
 
-You can also choose to install and use [invariant](https://github.com/weiran-zsd/dts-cli#invariant) and [warning](https://github.com/weiran-zsd/dts-cli#warning) functions.
+## Number
 
-## Module Formats
+Constructor: `a.number()`
 
-CJS, ESModules, and UMD module formats are supported.
+Methods:
 
-The appropriate paths are configured in `package.json` and `dist/index.js` accordingly. Please report if any issues are found.
+- `eq(value: number)` - Equal to the value
+- `gt(value: number)` - Greater than the value
+- `gte(value: number)` - Greater than or equal to the value
+- `lt(value: number)` - Less than the value
+- `lte(value: number)` - Less than or equal to the value
+- `int()` - Must be an integer
+- `finite()` - Must be a finite number
 
-## Named Exports
+```ts
+const schema = a.number().gt(10).lt(20);
+schema.validate(15);
+```
 
-Per Palmer Group guidelines, [always use named exports.](https://github.com/palmerhq/typescript#exports) Code split inside your React app instead of your React library.
+## Boolean
 
-## Including Styles
+Constructor: `a.boolean()`
 
-There are many ways to ship styles, including with CSS-in-JS. DTS has no opinion on this, configure how you like.
+Methods:
 
-For vanilla CSS, you can include it at the root directory and add it to the `files` section in your `package.json`, so that it can be imported separately by your users and run through their bundler's loader.
+- `eq(value: boolean)` - Equal to the value
 
-## Publishing to NPM
+```ts
+const schema = a.boolean();
+schema.validate(true);
+```
 
-We recommend using [np](https://github.com/sindresorhus/np).
+## Array
+
+Constructor: `a.array(item: Validator)`
+
+```ts
+const schema = a.array(a.number());
+schema.validate([1, 2, 3]);
+```
+
+## Object
+
+Constructor: `a.object(schema: Record<string, Validator>)`
+
+```ts
+const schema = a.object({
+  name: a.string(),
+  age: a.number(),
+});
+
+schema.validate({
+  name: 'John',
+  age: 20,
+});
+```
