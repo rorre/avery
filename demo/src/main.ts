@@ -1,5 +1,5 @@
 import './style.css';
-import { avery as a, avery } from 'avery';
+import { avery as a } from 'avery';
 import * as monaco from 'monaco-editor';
 import AveryDefs from 'avery/dist/index.d.ts?raw';
 import AveryArrayDefs from 'avery/dist/array.d.ts?raw';
