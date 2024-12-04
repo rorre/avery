@@ -1,0 +1,8 @@
+{
+  "entryPoints": ["src/index.ts"],
+  "out": "docs",
+  "navigationLinks": {
+    "Demo": "https://rorre.github.io/avery/demo",
+    "GitHub": "https://github.com/rorre/avery"
+},
+}

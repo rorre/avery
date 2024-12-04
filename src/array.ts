@@ -1,11 +1,26 @@
 import { Err, Ok, Result } from './monad/result';
 import { baseValidator, runCheck, Validator } from './validator';
 
+/**
+ * A validator that can validate an array based on the validator given.
+ * @template T The type of the array.
+ * @example
+ * const validator = avery.array(avery.string());
+ * const result = validator.validate(['hello', 'world']);
+ * console.log(result.isOk()); // Output: true
+ */
+export type ArrayValidator<T> = Validator<T[], string[]> & {
+  /**
+   * Checks if the array's length is equal or lower than n.
+   * @param n The maximum length of the array.
+   * @returns A new validator with the max length check.
+   */
+  maxLength: (n: number) => ArrayValidator<T>;
+};
+
 function _createValidator<T>(
   func: (data: T[]) => Result<T[], string[]>
-): Validator<T[], string[]> & {
-  maxLength: (n: number) => ReturnType<typeof _createValidator<T>>;
-} {
+): ArrayValidator<T> {
   return baseValidator(func, {
     maxLength: (n: number) =>
       _createValidator((data: T[]) =>
@@ -17,6 +32,7 @@ function _createValidator<T>(
   });
 }
 
+/** @private */
 export function createArrayValidator<T>(baseValidator: Validator<T, string[]>) {
   return _createValidator<T>((data) =>
     data

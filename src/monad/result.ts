@@ -44,5 +44,7 @@ function createErr<T, E>(value: E): Result<T, E> {
   };
 }
 
+/** @private */
 export const Ok = createOk;
+/** @private */
 export const Err = createErr;

@@ -1,103 +1,165 @@
-# DTS User Guide
+# Avery
 
-Congrats! You just saved yourself hours of work by bootstrapping this project with DTS. Let’s get you oriented with what’s here and how to use it.
+Avery is a schema first and type-safe validation library. The purpose of this library is to show that you can build a type-safe validation library without using TypeScript's advanced type features. In addition to that, it is to show that you can build a validation library in purely functional programming style.
 
-> This DTS setup is meant for developing libraries (not apps!) that can be published to NPM. If you’re looking to build a Node app, you could use `ts-node-dev`, plain `ts-node`, or simple `tsc`.
+# Usage
 
-> If you’re new to TypeScript, checkout [this handy cheatsheet](https://devhints.io/typescript)
+```ts
+import { avery as a } from 'avery';
 
-## Commands
+const schema = a.array(
+  a.array(
+    a.object({
+      name: a.string(),
+      age: a.number(),
+    })
+  )
+);
 
-DTS scaffolds your new library inside `/src`.
+const result = schema.validate([
+  [
+    {
+      name: 'John',
+      age: 10,
+    },
+    {
+      name: 'Jane',
+      age: 20,
+    },
+  ],
+]);
 
-To run DTS, use:
-
-```bash
-npm start # or yarn start
+const data = result.unwrap();
+console.log(data);
 ```
 
-This builds to `/dist` and runs the project in watch mode so any edits you save inside `src` causes a rebuild to `/dist`.
+This example runs as-is, and will validate the data. If the data is invalid, it will throw an error with a detailed message of where it errors out. For example, the example will produce the data itself.
 
-To do a one-off build, use `npm run build` or `yarn build`.
+## How It Works
 
-To run tests, use `npm test` or `yarn test`.
+Avery works by first defining all the check functions. This check function will only do one thing, but it will be chained with other check functions to build out the whole schema validator. It is done in a structure `Validator`. This validator will contain the check function, and is completely immutable.
 
-## Configuration
+Naively, it can be represented in Typescript like this:
 
-Code quality is set up for you with `prettier`, `husky`, and `lint-staged`. Adjust the respective fields in `package.json` accordingly.
-
-### Jest
-
-Jest tests are set up to run with `npm test` or `yarn test`.
-
-### Bundle Analysis
-
-[`size-limit`](https://github.com/ai/size-limit) is set up to calculate the real cost of your library with `npm run size` and visualize the bundle with `npm run analyze`.
-
-#### Setup Files
-
-This is the folder structure we set up for you:
-
-```txt
-/src
-  index.ts        # EDIT THIS
-/test
-  index.test.ts   # EDIT THIS
-.gitignore
-package.json
-README.md         # EDIT THIS
-tsconfig.json
+```ts
+type Validator<T> = {
+  check: (data: unknown) => Result<T>;
+};
 ```
 
-### Rollup
+A validator may have additional properties to modify its check function as well. Such as `NumberValidator` will have `gt`, `lt`, `int`, etc. These properties will return a new validator with the check function modified in a way that will wrap the previous check function. Overall, it will make use of the idea of Higher Order Function to build out the schema.
 
-DTS uses [Rollup](https://rollupjs.org) as a bundler and generates multiple rollup configs for various module formats and build settings. See [Optimizations](#optimizations) for details.
+Here is an example of how the `NumberValidator` is represented:
 
-### TypeScript
-
-`tsconfig.json` is set up to interpret `dom` and `esnext` types, as well as `react` for `jsx`. Adjust according to your needs.
-
-## Continuous Integration
-
-### GitHub Actions
-
-Two actions are added by default:
-
-- `main` which installs deps w/ cache, lints, tests, and builds on all pushes against a Node and OS matrix
-- `size` which comments cost comparison of your library on every pull request using [`size-limit`](https://github.com/ai/size-limit)
-
-## Optimizations
-
-Please see the main `dts` [optimizations docs](https://github.com/weiran-zsd/dts-cli#optimizations). In particular, know that you can take advantage of development-only optimizations:
-
-```js
-// ./types/index.d.ts
-declare var __DEV__: boolean;
-
-// inside your code...
-if (__DEV__) {
-  console.log('foo');
-}
+```ts
+type NumberValidator = Validator<number> & {
+  gt: (value: number) => NumberValidator;
+  lt: (value: number) => NumberValidator;
+  int: () => NumberValidator;
+};
 ```
 
-You can also choose to install and use [invariant](https://github.com/weiran-zsd/dts-cli#invariant) and [warning](https://github.com/weiran-zsd/dts-cli#warning) functions.
+As you can see, the `NumberValidator` is a `Validator` with additional properties. These properties will return a new `NumberValidator` with the check function modified according to the method used. This ensures that a validator will not have any side effects, and is completely immutable. Not only that, we can chain these methods to build out the schema and ensure that each check only does one thing, adhering to the Single Responsibility Principle.
 
-## Module Formats
+Here is an example of how chaining works:
 
-CJS, ESModules, and UMD module formats are supported.
+```ts
+const schema = a.number().gt(10).lt(20);
+```
 
-The appropriate paths are configured in `package.json` and `dist/index.js` accordingly. Please report if any issues are found.
+This will create a `NumberValidator` with the check function that checks if the data is greater than 10 and less than 20. This is done by chaining the methods `gt` and `lt` to the `NumberValidator`.
 
-## Named Exports
+When you call `validate` on the schema, it will run the check function on the data. If it fails, it will throw an error with a detailed message of where it fails. If it passes, it will return a `Result` object. This `Result` object will contain the data that has been validated.
 
-Per Palmer Group guidelines, [always use named exports.](https://github.com/palmerhq/typescript#exports) Code split inside your React app instead of your React library.
+## Type Inference
 
-## Including Styles
+You may be able to inference the type based on the schema you have built, just like zod!
 
-There are many ways to ship styles, including with CSS-in-JS. DTS has no opinion on this, configure how you like.
+```ts
+import { InferSchema, avery as a } from 'avery';
 
-For vanilla CSS, you can include it at the root directory and add it to the `files` section in your `package.json`, so that it can be imported separately by your users and run through their bundler's loader.
+const schema = a.object({
+  name: a.string(),
+  age: a.number(),
+});
 
-## Publishing to NPM
+type Data = InferSchema<typeof schema>;
+// The type will be:
+// {
+//   name: string;
+//   age: number;
+// }
+```
 
-We recommend using [np](https://github.com/sindresorhus/np).
+# Validators
+
+## String
+
+Constructor: `a.string()`
+
+Methods:
+
+- `minLength(min: number)` - Minimum length of the string
+- `maxLength(max: number)` - Maximum length of the string
+
+```ts
+const schema = a.string().minLength(3).maxLength(10);
+schema.validate('Hello!');
+```
+
+## Number
+
+Constructor: `a.number()`
+
+Methods:
+
+- `eq(value: number)` - Equal to the value
+- `gt(value: number)` - Greater than the value
+- `gte(value: number)` - Greater than or equal to the value
+- `lt(value: number)` - Less than the value
+- `lte(value: number)` - Less than or equal to the value
+- `int()` - Must be an integer
+- `finite()` - Must be a finite number
+
+```ts
+const schema = a.number().gt(10).lt(20);
+schema.validate(15);
+```
+
+## Boolean
+
+Constructor: `a.boolean()`
+
+Methods:
+
+- `eq(value: boolean)` - Equal to the value
+
+```ts
+const schema = a.boolean();
+schema.validate(true);
+```
+
+## Array
+
+Constructor: `a.array(item: Validator)`
+
+```ts
+const schema = a.array(a.number());
+schema.validate([1, 2, 3]);
+```
+
+## Object
+
+Constructor: `a.object(schema: Record<string, Validator>)`
+
+```ts
+const schema = a.object({
+  name: a.string(),
+  age: a.number(),
+});
+
+schema.validate({
+  name: 'John',
+  age: 20,
+});
+```

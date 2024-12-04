@@ -2,6 +2,7 @@ import { InferSchema } from './index';
 import { Err, Ok, Result } from './monad/result';
 import { baseValidator, Validator } from './validator';
 
+/** @private */
 export type InferErrorSchema<T> = T extends Validator<unknown, infer V>
   ? V
   : T extends Record<string, Validator<unknown, unknown>>
@@ -26,6 +27,7 @@ function errorObjectToArray(prefix: string, errors: Err): string[] {
   );
 }
 
+/** @private */
 export function createObjectValidator<
   S extends Record<string, Validator<unknown, unknown>>,
   T extends InferSchema<S> = InferSchema<S>
