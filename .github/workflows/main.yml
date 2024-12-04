@@ -2,31 +2,19 @@ name: CI
 on: [push]
 jobs:
   build:
-    name: Build, lint, and test on Node ${{ matrix.node }} and ${{ matrix.os }}
-
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        node: ['14.x', '16.x']
-        os: [ubuntu-latest, windows-latest, macOS-latest]
-
+    name: Build, lint, and test on Bun
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Use Node ${{ matrix.node }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node }}
+      - name: Use Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Install deps and build (with cache)
-        uses: bahmutov/npm-install@v1
-
-      - name: Lint
-        run: yarn lint
+        run: bun install
 
       - name: Test
-        run: yarn test --ci --coverage --maxWorkers=2
+        run: bun test --ci --coverage
 
       - name: Build
-        run: yarn build
+        run: bun run build
