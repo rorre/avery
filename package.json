@@ -1,6 +1,6 @@
 {
   "name": "avery",
-  "version": "0.1.0",
+  "version": "0.1.0-1",
   "license": "MIT",
   "author": "Rendy Arya Kemal",
   "main": "dist/index.js",
