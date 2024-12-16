@@ -2,6 +2,8 @@
 
 Avery is a schema first and type-safe validation library. The purpose of this library is to show that you can build a type-safe validation library without using TypeScript's advanced type features. In addition to that, it is to show that you can build a validation library in purely functional programming style.
 
+[Read the docs](https://rorre.github.io/avery/)
+
 # Usage
 
 ```ts

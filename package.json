@@ -6,6 +6,8 @@
   "main": "dist/index.js",
   "module": "dist/avery.esm.js",
   "typings": "dist/index.d.ts",
+  "repository": "github:rorre/avery",
+  "homepage": "https://rorre.github.io/avery",
   "files": [
     "dist",
     "src"
