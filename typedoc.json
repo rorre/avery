@@ -2,7 +2,7 @@
   "entryPoints": ["src/index.ts"],
   "out": "docs",
   "navigationLinks": {
-    "Demo": "https://rorre.github.io/avery/demo",
+    "Demo": "https://stackblitz.com/edit/avery-playground?file=README.md",
     "GitHub": "https://github.com/rorre/avery"
 },
 }
